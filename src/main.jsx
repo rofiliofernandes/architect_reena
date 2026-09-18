@@ -1,6 +1,6 @@
 import React,{useEffect,useMemo,useRef,useState} from "react";
 import {createRoot} from "react-dom/client";
-import {ArrowUpRight,Menu,X,Plus,Trash2,Save,Eye,Monitor,Tablet,Smartphone,LogOut,LayoutDashboard,FolderOpen,FileText,HardDrive,Upload,ChevronLeft,GripVertical,Lock} from "lucide-react";
+import {ArrowUpRight,Menu,X,Plus,Trash2,Save,Eye,Monitor,Tablet,Smartphone,LogOut,LayoutDashboard,FolderOpen,FileText,HardDrive,Upload,ChevronLeft,GripVertical,Lock,Sun,Moon} from "lucide-react";
 import "./styles.css";
 import {api} from "./api";
 
@@ -55,17 +55,27 @@ function Login({onSuccess,exit}){
  return <div className="login-screen"><form onSubmit={submit}><Lock size={22}/><h1>Studio access</h1><p>Enter the admin password to continue.</p><input type="password" autoFocus value={password} onChange={e=>setPassword(e.target.value)} placeholder="Password"/>{error&&<span className="login-error">{error}</span>}<button className="primary" disabled={busy}>{busy?"Checking…":"Enter"}</button><button type="button" className="text-link" onClick={exit}>← Back to website</button></form></div>
 }
 
-function Nav({page,setPage}){
+function useTheme(){
+ const [theme,setTheme]=useState(()=>localStorage.getItem("arl-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"));
+ useEffect(()=>localStorage.setItem("arl-theme",theme),[theme]);
+ return [theme,()=>setTheme(t=>t==="dark"?"light":"dark")];
+}
+
+function Nav({page,setPage,theme,toggleTheme}){
  const [open,setOpen]=useState(false);
  return <header className="nav"><button className="wordmark" onClick={()=>setPage("home")}>ARCHITECT REENA LOTLIKAR</button>
+ <div className="nav-right">
  <nav className={open?"nav-links open":"nav-links"}>{[["home","Home"],["projects","Work"],["studio","About"],["contact","Contact"]].map(([k,l])=><button className={page===k?"active":""} onClick={()=>{setPage(k);setOpen(false)}} key={k}>{l}</button>)}</nav>
- <button className="menu-btn" onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</button></header>
+ <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle dark mode" title="Toggle dark mode">{theme==="dark"?<Sun size={16}/>:<Moon size={16}/>}</button>
+ <button className="menu-btn" onClick={()=>setOpen(!open)}>{open?<X/>:<Menu/>}</button>
+ </div></header>
 }
 
 function Public({projects,openAdmin}){
  const [page,setPage]=useState("home"),[project,setProject]=useState(null);
- if(project)return <ProjectPage p={project} back={()=>setProject(null)}/>;
- return <div className="site"><Nav page={page} setPage={setPage}/>
+ const [theme,toggleTheme]=useTheme();
+ if(project)return <ProjectPage p={project} back={()=>setProject(null)} theme={theme} toggleTheme={toggleTheme}/>;
+ return <div className="site" data-theme={theme}><Nav page={page} setPage={setPage} theme={theme} toggleTheme={toggleTheme}/>
  {page==="home"&&<Home projects={projects} open={setProject}/>}
  {page==="projects"&&<Work projects={projects} open={setProject}/>}
  {page==="studio"&&<About/>}
@@ -90,8 +100,8 @@ function ProjectGrid({projects,open}){
 
 function Work({projects,open}){return <main className="inner"><div className="page-head"><p className="eyebrow">01 / Work</p><h1>The work<br/><em>speaks for itself.</em></h1><p className="page-intro">Completed homes, projects under construction and spaces taking shape across Goa.</p></div><ProjectGrid projects={projects.filter(p=>p.published)} open={open}/></main>}
 
-function ProjectPage({p,back}){
- return <div className="site"><header className="nav"><button className="wordmark" onClick={back}>ARCHITECT REENA LOTLIKAR</button><button className="back" onClick={back}>← Back to work</button></header>
+function ProjectPage({p,back,theme,toggleTheme}){
+ return <div className="site" data-theme={theme}><header className="nav"><button className="wordmark" onClick={back}>ARCHITECT REENA LOTLIKAR</button><div className="nav-right"><button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle dark mode" title="Toggle dark mode">{theme==="dark"?<Sun size={16}/>:<Moon size={16}/>}</button><button className="back" onClick={back}>← Back to work</button></div></header>
  <main className="project-page"><div className="project-title"><p className="eyebrow">{p.category} · {p.location} · {p.year}</p><h1>{p.title}</h1><p>{p.excerpt}</p></div>
  <div className="large-photo" style={{backgroundImage:`url(${p.cover})`}}/>
  <div className="facts">{[["Location",p.location],["Type",p.category],["Year",p.year],["Status",p.status]].map(x=><div key={x[0]}><small>{x[0]}</small><strong>{x[1]}</strong></div>)}</div>
@@ -111,7 +121,7 @@ function Admin({projects,setProjects,storage,setStorage,exit}){
  const projectNew=()=>{setEditing({type:"project",item:{...seedProject,id:"p"+Date.now(),title:"New project",location:"",category:"Residential",year:"2026",status:"Proposed",excerpt:"",cover:"",gallery:[],videos:[],construction:{stage:"Design",note:"",media:[]},reenaNote:"",published:false}})};
  if(preview)return <Preview item={preview.item} type={preview.type} close={()=>setPreview(null)}/>;
  if(editing)return <Editor data={editing} setData={setEditing} save={(item)=>{setProjects(x=>x.some(p=>p.id===item.id)?x.map(p=>p.id===item.id?item:p):[...x,item]);setEditing(null)}} preview={setPreview}/>;
- return <div className="admin"><aside><div className="admin-brand">REENA<br/><span>LOTLIKAR</span></div>{[["dashboard","Dashboard",LayoutDashboard],["projects","Projects",FolderOpen],["media","Media",Upload],["storage","Storage",HardDrive]].map(([k,l,I])=><button className={section===k?"selected":""} onClick={()=>setSection(k)} key={k}><I size={17}/>{l}</button>)}<button className="exit" onClick={exit}><LogOut size={17}/>Exit</button></aside><div className="admin-main"><header className="admin-top"><div><small>PRIVATE STUDIO</small><h1>{section==="dashboard"?"Good evening, Reena.":section[0].toUpperCase()+section.slice(1)}</h1></div><button className="view-site" onClick={exit}>View website ↗</button></header>
+ return <div className="admin"><aside><div className="admin-brand">REENA<br/><span>LOTLIKAR</span></div>{[["dashboard","Dashboard",LayoutDashboard],["projects","Projects",FolderOpen],["media","Media",Upload],["storage","Storage",HardDrive]].map(([k,l,I])=><button className={section===k?"selected":""} onClick={()=>setSection(k)} key={k}><I size={17}/>{l}{k==="storage"&&<span className="nav-badge">7GB</span>}</button>)}<button className="exit" onClick={exit}><LogOut size={17}/>Exit</button></aside><div className="admin-main"><header className="admin-top"><div><small>PRIVATE STUDIO</small><h1>{section==="dashboard"?"Good evening, Reena.":section[0].toUpperCase()+section.slice(1)}</h1></div><button className="view-site" onClick={exit}>View website ↗</button></header>
  {section==="dashboard"&&<Dashboard projects={projects} open={setEditing} storage={storage}/>}
  {section==="projects"&&<ProjectAdmin projects={projects} edit={x=>setEditing({type:"project",item:x})} add={projectNew} remove={id=>setProjects(x=>x.filter(p=>p.id!==id))}/>}
 
