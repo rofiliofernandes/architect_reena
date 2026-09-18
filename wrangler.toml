@@ -1,0 +1,21 @@
+name = "architect-reena-lotlikar"
+main = "worker/index.js"
+compatibility_date = "2026-09-03"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "architect-reena-lotlikar-db"
+database_id = "REPLACE_WITH_DEDICATED_D1_ID"
+
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "architect-reena-lotlikar-media"
+
+# Required secrets (set with `wrangler secret put <NAME>`, never commit these):
+#   ADMIN_PASSWORD  — the studio login password
+#   SESSION_SECRET  — random string used to sign admin session cookies
+#
+# Optional, only needed if the frontend is deployed on a different origin
+# from this worker (e.g. frontend on Cloudflare Pages, API on Workers):
+# [vars]
+# ALLOWED_ORIGIN = "https://architect-reena-lotlikar.pages.dev"

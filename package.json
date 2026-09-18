@@ -1,0 +1,25 @@
+{
+  "name": "architect-reena-lotlikar-v3",
+  "private": true,
+  "version": "3.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:worker": "wrangler dev --port 8787",
+    "build": "vite build",
+    "preview": "vite preview",
+    "db:migrate": "wrangler d1 execute architect-reena-lotlikar-db --file=./schema.sql",
+    "db:migrate:remote": "wrangler d1 execute architect-reena-lotlikar-db --remote --file=./schema.sql",
+    "deploy": "vite build && wrangler deploy"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "vite": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "lucide-react": "latest"
+  },
+  "devDependencies": {
+    "wrangler": "latest"
+  }
+}
